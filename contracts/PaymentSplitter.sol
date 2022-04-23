@@ -20,8 +20,13 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
     error WrongAddress();
     error NoBalance();
 
-    address public addr1;
-    address public addr2;
+    // compiler will packed them
+    struct Addresses {
+        address addr1;
+        address addr2;
+    }
+
+    Addresses public addrs;
 
     uint256 public immutable share1;
     uint256 public immutable share2;
@@ -50,8 +55,8 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         if (share1_ + share2_ != 100) revert WrongShares();
         if (share1_ == 0 || share2_ == 0) revert WrongShares();
 
-        addr1 = addr1_;
-        addr2 = addr2_;
+        addrs.addr1 = addr1_;
+        addrs.addr2 = addr2_;
         share1 = share1_;
         share2 = share2_;
     }
@@ -64,6 +69,9 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         uint256 balance = address(this).balance;
 
         if (balance == 0) revert NoBalance();
+
+        address addr1 = addrs.addr1;
+        address addr2 = addrs.addr2;
 
         uint256 addr1Amount = (balance * share1) / 100;
         uint256 addr2Amount = (balance * share2) / 100;
@@ -81,7 +89,11 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         IERC20 erc20 = IERC20(erc20_);
 
         uint256 balance = erc20.balanceOf(address(this));
+
         if (balance == 0) revert NoBalance();
+
+        address addr1 = addrs.addr1;
+        address addr2 = addrs.addr2;
 
         uint256 addr1Amount = (balance * share1) / 100;
         uint256 addr2Amount = (balance * share2) / 100;
@@ -95,11 +107,11 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
 
     function changeAddr(address addr1_, address addr2_) external onlyOwner {
         if (addr1_ != address(0)) {
-            addr1 = addr1_;
+            addrs.addr1 = addr1_;
         }
 
         if (addr2_ != address(0)) {
-            addr2 = addr2_;
+            addrs.addr2 = addr2_;
         }
     }
 }

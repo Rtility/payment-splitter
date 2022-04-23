@@ -68,8 +68,8 @@ describe('PaymentSplitter', () => {
 
     context('storage vars', async () => {
       it('should return correct address', async () => {
-        expect(await splitter.addr1()).to.eq(addr1.address);
-        expect(await splitter.addr2()).to.eq(addr2.address);
+        expect((await splitter.addrs()).addr1).to.eq(addr1.address);
+        expect((await splitter.addrs()).addr2).to.eq(addr2.address);
       });
 
       it('should return correct shares', async () => {
@@ -186,26 +186,26 @@ describe('PaymentSplitter', () => {
     context('changeAddr', async () => {
       it('should change only first address', async () => {
         splitter.changeAddr(addr3.address, ZERO_ADDRESS);
-        expect(await splitter.addr1()).to.eq(addr3.address);
-        expect(await splitter.addr2()).to.eq(addr2.address);
+        expect((await splitter.addrs()).addr1).to.eq(addr3.address);
+        expect((await splitter.addrs()).addr2).to.eq(addr2.address);
       });
 
       it('should change only second address', async () => {
         splitter.changeAddr(ZERO_ADDRESS, addr3.address);
-        expect(await splitter.addr1()).to.eq(addr1.address);
-        expect(await splitter.addr2()).to.eq(addr3.address);
+        expect((await splitter.addrs()).addr1).to.eq(addr1.address);
+        expect((await splitter.addrs()).addr2).to.eq(addr3.address);
       });
 
       it('should change both address', async () => {
         splitter.changeAddr(addr3.address, addr4.address);
-        expect(await splitter.addr1()).to.eq(addr3.address);
-        expect(await splitter.addr2()).to.eq(addr4.address);
+        expect((await splitter.addrs()).addr1).to.eq(addr3.address);
+        expect((await splitter.addrs()).addr2).to.eq(addr4.address);
       });
 
       it('should not change if both addresses are zero', async () => {
         splitter.changeAddr(ZERO_ADDRESS, ZERO_ADDRESS);
-        expect(await splitter.addr1()).to.eq(addr1.address);
-        expect(await splitter.addr2()).to.eq(addr2.address);
+        expect((await splitter.addrs()).addr1).to.eq(addr1.address);
+        expect((await splitter.addrs()).addr2).to.eq(addr2.address);
       });
     });
   });
