@@ -1,4 +1,6 @@
+import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 // deploy contract function
 async function deployContract(contractName: string, ...callData: any): Promise<any> {
@@ -8,14 +10,20 @@ async function deployContract(contractName: string, ...callData: any): Promise<a
   return contract;
 }
 
-// increase block timestamp function
-async function increaseBlockTimestamp(increase: number): Promise<void> {
-  await ethers.provider.send('evm_increaseTime', [increase]);
-  await ethers.provider.send('evm_mine', []);
+// deploy contract function
+async function tryDeploy(contractName: string, ...callData: any): Promise<any> {
+  const factory = await ethers.getContractFactory(contractName);
+  return factory.deploy(...callData);
 }
 
-const lastBlockTimestamp = async (): Promise<number> => {
-  return (await ethers.provider.getBlock('latest')).timestamp;
-};
+// transfer eth to contract
+async function transferETH(contract: any, amount: BigNumber, singer: SignerWithAddress): Promise<any> {
+  const tx = await singer.sendTransaction({
+    to: contract.address,
+    value: amount,
+  });
+  await tx.wait();
+  return tx;
+}
 
-export { deployContract, increaseBlockTimestamp, lastBlockTimestamp };
+export { deployContract, tryDeploy, transferETH };

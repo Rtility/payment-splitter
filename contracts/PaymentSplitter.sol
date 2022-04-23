@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 
+/// @title A Gas Efficient 2 Wallets Payment Splitter
+/// @author Rtility (https://github.com/Rtility/)
 contract PaymentSplitter is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -21,6 +23,20 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
     uint256 private immutable _share1;
     uint256 private immutable _share2;
 
+    /**
+     * @dev Initializes the contract by setting addresses and shares.
+     * @dev shares must be based on percentage (0-100)
+     * 
+     * Requires:
+     * - `addr1_` and `addr2_` not be zero address
+     * - `share1_` and `share2_` must be greater than zero
+     * - `share1_` + `share2_` must be 100
+     *
+     * @param addr1_ The address of the first wallet.
+     * @param addr2_ The address of the second wallet.
+     * @param share1_ The share of the first wallet.
+     * @param share2_ The share of the second wallet.
+     */
     constructor(
         address addr1_,
         address addr2_,
@@ -62,7 +78,6 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
     }
 
     function changeAddr(address addr1_, address addr2_) external onlyOwner {
-        
         if (addr1_ != address(0)) {
             _addr1 = addr1_;
         }
