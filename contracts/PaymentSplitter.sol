@@ -11,9 +11,9 @@ import "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 contract PaymentSplitter is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    event Received(address, uint256);
-    event Withdraw(address, uint256);
-    event WithdrawERC20(address, uint256);
+    event Received(address from, uint256 amount);
+    event Withdraw(address to, uint256 amount);
+    event WithdrawERC20(IERC20 indexed token, address to, uint256 amount);
 
     error PaymentFailed();
     error WrongShares();
@@ -86,9 +86,9 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
     }
 
     function withdrawERC20(address erc20_) external nonReentrant {
-        IERC20 erc20 = IERC20(erc20_);
+        IERC20 token = IERC20(erc20_);
 
-        uint256 balance = erc20.balanceOf(address(this));
+        uint256 balance = token.balanceOf(address(this));
 
         if (balance == 0) revert NoBalance();
 
@@ -98,11 +98,11 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         uint256 addr1Amount = (balance * share1) / 100;
         uint256 addr2Amount = (balance * share2) / 100;
 
-        erc20.safeTransfer(addr1, addr1Amount);
-        erc20.safeTransfer(addr2, addr2Amount);
+        token.safeTransfer(addr1, addr1Amount);
+        token.safeTransfer(addr2, addr2Amount);
 
-        emit WithdrawERC20(addr1, addr1Amount);
-        emit WithdrawERC20(addr2, addr2Amount);
+        emit WithdrawERC20(token, addr1, addr1Amount);
+        emit WithdrawERC20(token, addr2, addr2Amount);
     }
 
     function changeAddr(address addr1_, address addr2_) external onlyOwner {

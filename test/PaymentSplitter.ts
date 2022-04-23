@@ -164,8 +164,8 @@ describe('PaymentSplitter', () => {
 
         // withdraw weth
         const withdrawTx = await splitter.withdrawERC20(weth.address);
-        await expect(withdrawTx).to.emit(splitter, 'WithdrawERC20').withArgs(addr1.address, addr1Share);
-        await expect(withdrawTx).to.emit(splitter, 'WithdrawERC20').withArgs(addr2.address, addr2Share);
+        await expect(withdrawTx).to.emit(splitter, 'WithdrawERC20').withArgs(weth.address, addr1.address, addr1Share);
+        await expect(withdrawTx).to.emit(splitter, 'WithdrawERC20').withArgs(weth.address, addr2.address, addr2Share);
 
         const contractBalanceAfter = await weth.balanceOf(splitter.address);
         expect(contractBalanceAfter).to.eq(ethers.constants.Zero);
