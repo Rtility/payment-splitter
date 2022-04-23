@@ -12,21 +12,24 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event Received(address, uint256);
+    event Withdraw(address, uint256);
+    event WithdrawERC20(address, uint256);
+
     error PaymentFailed();
     error WrongShares();
     error WrongAddress();
     error NoBalance();
 
-    address private _addr1;
-    address private _addr2;
+    address public addr1;
+    address public addr2;
 
-    uint256 private immutable _share1;
-    uint256 private immutable _share2;
+    uint256 public immutable share1;
+    uint256 public immutable share2;
 
     /**
      * @dev Initializes the contract by setting addresses and shares.
      * @dev shares must be based on percentage (0-100)
-     * 
+     *
      * Requires:
      * - `addr1_` and `addr2_` not be zero address
      * - `share1_` and `share2_` must be greater than zero
@@ -47,10 +50,10 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         if (share1_ + share2_ != 100) revert WrongShares();
         if (share1_ == 0 || share2_ == 0) revert WrongShares();
 
-        _addr1 = addr1_;
-        _addr2 = addr2_;
-        _share1 = share1_;
-        _share2 = share2_;
+        addr1 = addr1_;
+        addr2 = addr2_;
+        share1 = share1_;
+        share2 = share2_;
     }
 
     receive() external payable {
@@ -62,28 +65,41 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
 
         if (balance == 0) revert NoBalance();
 
-        (bool success1, ) = _addr1.call{value: (balance * _share1) / 100}("");
-        (bool success2, ) = _addr2.call{value: (balance * _share2) / 100}("");
+        uint256 addr1Amount = (balance * share1) / 100;
+        uint256 addr2Amount = (balance * share2) / 100;
+
+        (bool success1, ) = addr1.call{value: addr1Amount}("");
+        (bool success2, ) = addr2.call{value: addr2Amount}("");
 
         if (!success1 || !success2) revert PaymentFailed();
+
+        emit Withdraw(addr1, addr1Amount);
+        emit Withdraw(addr2, addr2Amount);
     }
 
-    function withdraw(address erc20_) external nonReentrant {
+    function withdrawERC20(address erc20_) external nonReentrant {
         IERC20 erc20 = IERC20(erc20_);
 
         uint256 balance = erc20.balanceOf(address(this));
+        if (balance == 0) revert NoBalance();
 
-        erc20.safeTransfer(msg.sender, (balance * _share1) / 100);
-        erc20.safeTransfer(msg.sender, (balance * _share2) / 100);
+        uint256 addr1Amount = (balance * share1) / 100;
+        uint256 addr2Amount = (balance * share2) / 100;
+
+        erc20.safeTransfer(addr1, addr1Amount);
+        erc20.safeTransfer(addr2, addr2Amount);
+
+        emit WithdrawERC20(addr1, addr1Amount);
+        emit WithdrawERC20(addr2, addr2Amount);
     }
 
     function changeAddr(address addr1_, address addr2_) external onlyOwner {
         if (addr1_ != address(0)) {
-            _addr1 = addr1_;
+            addr1 = addr1_;
         }
 
         if (addr2_ != address(0)) {
-            _addr2 = addr2_;
+            addr2 = addr2_;
         }
     }
 }
