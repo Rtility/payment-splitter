@@ -9,8 +9,6 @@ import "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 /// @title A Gas Efficient 2 Wallets Payment Splitter
 /// @author Rtility (https://github.com/Rtility/)
 contract PaymentSplitter is Ownable, ReentrancyGuard {
-    using SafeERC20 for IERC20;
-
     event Received(address from, uint256 amount);
     event Withdraw(address to, uint256 amount);
     event WithdrawERC20(IERC20 indexed token, address to, uint256 amount);
@@ -33,7 +31,7 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
 
     /**
      * @dev Initializes the contract by setting addresses and shares.
-     * @dev shares must be based on percentage (0-100)
+     * @dev Shares must be based on percentages (0-100)
      *
      * Requires:
      * - `addr1_` and `addr2_` not be zero address
@@ -61,10 +59,22 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         share2 = share2_;
     }
 
+    /**
+     * @dev The Ether received will be logged with {Received} events. Note that these events are not fully
+     * reliable: it's possible for a contract to receive Ether without triggering this function. This only affects the
+     * reliability of the events, and not the actual splitting of Ether.
+     */
     receive() external payable {
         emit Received(msg.sender, msg.value);
     }
 
+    /**
+     * @dev Triggers Ether transfer from contract to both wallets, according to their percentage of the
+     * total shares.
+     *
+     * Requires:
+     * - balance of the contract must be greater than zero
+     */
     function withdraw() external nonReentrant {
         uint256 balance = address(this).balance;
 
@@ -85,9 +95,17 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         emit Withdraw(addr2, addr2Amount);
     }
 
-    function withdrawERC20(address erc20_) external nonReentrant {
-        IERC20 token = IERC20(erc20_);
-
+    /**
+     * @dev Triggers a transfer to both wallets of the amount of `token` tokens they are owed, according to their
+     * percentage of the total shares. `token` must be the address of an IERC20 contract.
+     *
+     * Requires:
+     * - `token` must be an IERC20 contract.
+     * - balance of the contract must be greater than zero
+     *
+     * @param token The address of the ERC20 contract.
+     */
+    function withdrawERC20(IERC20 token) external nonReentrant {
         uint256 balance = token.balanceOf(address(this));
 
         if (balance == 0) revert NoBalance();
@@ -98,13 +116,19 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
         uint256 addr1Amount = (balance * share1) / 100;
         uint256 addr2Amount = (balance * share2) / 100;
 
-        token.safeTransfer(addr1, addr1Amount);
-        token.safeTransfer(addr2, addr2Amount);
+        SafeERC20.safeTransfer(token, addr1, addr1Amount);
+        SafeERC20.safeTransfer(token, addr2, addr2Amount);
 
         emit WithdrawERC20(token, addr1, addr1Amount);
         emit WithdrawERC20(token, addr2, addr2Amount);
     }
 
+    /**
+     * @dev Change wallet addresses.
+     * @dev If you want to change only one address, you can pass the other address as zero address.
+     * @param addr1_ The new address of the first wallet.
+     * @param addr2_ The new address of the second wallet.
+     */
     function changeAddr(address addr1_, address addr2_) external onlyOwner {
         if (addr1_ != address(0)) {
             addrs.addr1 = addr1_;
