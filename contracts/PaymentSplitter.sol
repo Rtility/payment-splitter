@@ -1,14 +1,13 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 
 /// @title A Gas Efficient 2 Wallets Payment Splitter
 /// @author Rtility (https://github.com/Rtility/)
-contract PaymentSplitter is Ownable, ReentrancyGuard {
+contract PaymentSplitter is ReentrancyGuard {
     event Received(address from, uint256 amount);
     event Withdraw(address to, uint256 amount);
     event WithdrawERC20(IERC20 indexed token, address to, uint256 amount);
@@ -17,6 +16,7 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
     error WrongShares();
     error WrongAddress();
     error NoBalance();
+    error NotValidSender();
 
     // compiler will packed them
     struct Addresses {
@@ -124,18 +124,34 @@ contract PaymentSplitter is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Change wallet addresses.
-     * @dev If you want to change only one address, you can pass the other address as zero address.
-     * @param addr1_ The new address of the first wallet.
-     * @param addr2_ The new address of the second wallet.
+     * @dev Change the first wallet address.
+     *
+     * Requires:
+     * - `newAddr_` not be zero address
+     * - `msg.sender` must be the old address
+     *
+     * @param newAddr_ The new address of the wallet.
      */
-    function changeAddr(address addr1_, address addr2_) external onlyOwner {
-        if (addr1_ != address(0)) {
-            addrs.addr1 = addr1_;
-        }
+    function changeAddr1(address newAddr_) external {
+        if (newAddr_ == address(0)) revert WrongAddress();
+        if (msg.sender != addrs.addr1) revert NotValidSender();
 
-        if (addr2_ != address(0)) {
-            addrs.addr2 = addr2_;
-        }
+        addrs.addr1 = newAddr_;
+    }
+
+    /**
+     * @dev Change the second wallet address.
+     *
+     * Requires:
+     * - `newAddr_` not be zero address
+     * - `msg.sender` must be the old address
+     *
+     * @param newAddr_ The new address of the wallet.
+     */
+    function changeAddr2(address newAddr_) external {
+        if (newAddr_ == address(0)) revert WrongAddress();
+        if (msg.sender != addrs.addr2) revert NotValidSender();
+
+        addrs.addr2 = newAddr_;
     }
 }
