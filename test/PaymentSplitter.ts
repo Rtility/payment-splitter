@@ -14,6 +14,7 @@ describe('PaymentSplitter', () => {
   let addr2: SignerWithAddress;
   let addr3: SignerWithAddress;
   let addr4: SignerWithAddress;
+  let addr5: SignerWithAddress;
   let addrs: SignerWithAddress[];
   const share1: BigNumber = BigNumber.from(70);
   const share2: BigNumber = BigNumber.from(30);
@@ -21,7 +22,7 @@ describe('PaymentSplitter', () => {
   const ZERO_ADDRESS = ethers.constants.AddressZero;
 
   beforeEach(async () => {
-    [owner, addr1, addr2, addr3, addr4, ...addrs] = await ethers.getSigners();
+    [owner, addr1, addr2, addr3, addr4, addr5, ...addrs] = await ethers.getSigners();
   });
 
   context('deploy', async () => {
@@ -183,29 +184,72 @@ describe('PaymentSplitter', () => {
       });
     });
 
-    context('changeAddr', async () => {
-      it('should change only first address', async () => {
-        splitter.changeAddr(addr3.address, ZERO_ADDRESS);
-        expect((await splitter.addrs()).addr1).to.eq(addr3.address);
-        expect((await splitter.addrs()).addr2).to.eq(addr2.address);
+    context('change Addr', async () => {
+      context('changeAddr1', async () => {
+        it('should change addr1', async () => {
+          await splitter.connect(addr1).changeAddr1(addr3.address);
+          expect((await splitter.addrs()).addr1).to.eq(addr3.address);
+        });
+
+        it('should change multiple times', async () => {
+          await splitter.connect(addr1).changeAddr1(addr3.address);
+          expect((await splitter.addrs()).addr1).to.eq(addr3.address);
+
+          // sanity check
+          await expect(splitter.connect(addr1).changeAddr1(addr3.address)).to.revertedWith('NotValidSender');
+
+          await splitter.connect(addr3).changeAddr1(addr4.address);
+          expect((await splitter.addrs()).addr1).to.eq(addr4.address);
+
+          // sanity check
+          await expect(splitter.connect(addr3).changeAddr1(addr3.address)).to.revertedWith('NotValidSender');
+
+          await splitter.connect(addr4).changeAddr1(addr5.address);
+          expect((await splitter.addrs()).addr1).to.eq(addr5.address);
+        });
+
+        it('should revert if not sender', async () => {
+          await expect(splitter.connect(addr2).changeAddr1(addr3.address)).to.revertedWith('NotValidSender');
+          await expect(splitter.connect(addr4).changeAddr1(addr3.address)).to.revertedWith('NotValidSender');
+        });
+
+        it('should revert if not zero address', async () => {
+          await expect(splitter.connect(addr1).changeAddr1(ZERO_ADDRESS)).to.revertedWith('WrongAddress');
+        });
       });
 
-      it('should change only second address', async () => {
-        splitter.changeAddr(ZERO_ADDRESS, addr3.address);
-        expect((await splitter.addrs()).addr1).to.eq(addr1.address);
-        expect((await splitter.addrs()).addr2).to.eq(addr3.address);
-      });
+      context('changeAddr2', async () => {
+        it('should change addr2', async () => {
+          await splitter.connect(addr2).changeAddr2(addr3.address);
+          expect((await splitter.addrs()).addr2).to.eq(addr3.address);
+        });
 
-      it('should change both address', async () => {
-        splitter.changeAddr(addr3.address, addr4.address);
-        expect((await splitter.addrs()).addr1).to.eq(addr3.address);
-        expect((await splitter.addrs()).addr2).to.eq(addr4.address);
-      });
+        it('should change multiple times', async () => {
+          await splitter.connect(addr2).changeAddr2(addr3.address);
+          expect((await splitter.addrs()).addr2).to.eq(addr3.address);
 
-      it('should not change if both addresses are zero', async () => {
-        splitter.changeAddr(ZERO_ADDRESS, ZERO_ADDRESS);
-        expect((await splitter.addrs()).addr1).to.eq(addr1.address);
-        expect((await splitter.addrs()).addr2).to.eq(addr2.address);
+          // sanity check
+          await expect(splitter.connect(addr2).changeAddr2(addr3.address)).to.revertedWith('NotValidSender');
+
+          await splitter.connect(addr3).changeAddr2(addr4.address);
+          expect((await splitter.addrs()).addr2).to.eq(addr4.address);
+
+          // sanity check
+          await expect(splitter.connect(addr3).changeAddr2(addr3.address)).to.revertedWith('NotValidSender');
+
+          await splitter.connect(addr4).changeAddr2(addr5.address);
+          expect((await splitter.addrs()).addr2).to.eq(addr5.address);
+        });
+
+        it('should revert if not sender', async () => {
+          await expect(splitter.connect(addr1).changeAddr2(addr3.address)).to.revertedWith('NotValidSender');
+          await expect(splitter.connect(addr4).changeAddr2(addr3.address)).to.revertedWith('NotValidSender');
+        });
+
+        it('should revert if not zero address', async () => {
+          await expect(splitter.changeAddr2(ZERO_ADDRESS)).to.revertedWith('WrongAddress');
+          await expect(splitter.connect(addr2).changeAddr2(ZERO_ADDRESS)).to.revertedWith('WrongAddress');
+        });
       });
     });
   });
