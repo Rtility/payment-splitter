@@ -1,4 +1,5 @@
 import { ethers } from 'hardhat';
+import hre from 'hardhat';
 
 async function main() {
   // get signer wallet
@@ -11,7 +12,7 @@ async function main() {
     signer
   );
 
-  console.log('listening to events on ' + PaymentSplitter.address);
+  console.log('listening to events on ' + PaymentSplitter.address + ' on network ' + hre.network.name);
   // listen on Received event
   PaymentSplitter.on('Received', (from: string, amount: string) => {
     console.log(`Received ${amount} from ${from}`);
@@ -19,7 +20,7 @@ async function main() {
     const tx = PaymentSplitter.withdraw();
 
     tx.then((tx) => {
-      console.log('withdraw tx:', tx.hash);
+      console.log('Withdraw tx:', tx.hash);
     });
   });
 }
