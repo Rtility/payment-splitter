@@ -12,16 +12,27 @@ async function main() {
     signer
   );
 
-  console.log('listening to events on ' + PaymentSplitter.address + ' on network ' + hre.network.name);
+  const withdraw = async () => {
+    const contractBalance = await ethers.provider.getBalance(PaymentSplitter.address);
+
+    if (contractBalance.gt(0)) {
+      console.log('Withdrawing...');
+      const tx1 = await PaymentSplitter.withdraw();
+      await tx1.wait();
+      console.log('Withdraw ' + ethers.utils.formatEther(contractBalance) + ' ETH at tx:', tx1.hash);
+    } else {
+      console.log('No balance to withdraw, contract balance is already withdrawn!');
+    }
+  };
+
+  console.log('> First check contract balance and withdraw if any.');
+  await withdraw();
+
   // listen on Received event
-  PaymentSplitter.on('Received', (from: string, amount: string) => {
-    console.log(`Received ${amount} from ${from}`);
-
-    const tx = PaymentSplitter.withdraw();
-
-    tx.then((tx) => {
-      console.log('Withdraw tx:', tx.hash);
-    });
+  console.log('> Listening to events on ' + PaymentSplitter.address + ' on network ' + hre.network.name + '...');
+  PaymentSplitter.on('Received', async (from: string, amount: string) => {
+    console.log(`Received ${ethers.utils.formatEther(amount)} ETH from ${from}`);
+    await withdraw();
   });
 }
 
