@@ -10,6 +10,9 @@ npm run deploy
 You can set the defualt network and `PRIVATE_KEY` in the `.env` file. check [.env.example](.env.example) to see the template.  
 For developing purpose, `mainnet` is not in the [hardhat.config.ts](hardhat.config.ts), add it manually if you want to deploy directly to the `mainnet`.
 
+### Demo of deploying and verifying the contract using docker:
+[![asciicast](https://asciinema.org/a/VZXrriHnQJ7Wu6nGaNskIqnkp.svg)](https://asciinema.org/a/VZXrriHnQJ7Wu6nGaNskIqnkp)
+
 ## Event Listener
 Set the contract address on .env file and run the following command:
 ```bash
@@ -22,6 +25,9 @@ To start event listener in docker, run the following command:
 docker-compose up -d --build
 ```
 Don't forget to set the environment variables on .env file.  
+
+### Demo of running the event listener using docker
+[![asciicast](https://asciinema.org/a/lxvIKGrpwemjx4ws8K0Z86PSH.svg)](https://asciinema.org/a/lxvIKGrpwemjx4ws8K0Z86PSH)
 
 ## Test coverage:  
 
