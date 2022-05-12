@@ -9,7 +9,7 @@ services:
         - payment_splitter:latest
     image: payment_splitter:latest
     command: npm run payment-event-listener
-    restart: always
+    restart: unless-stopped
     environment:
       - RINKEBY_URL
       - PRIVATE_KEY
@@ -17,3 +17,4 @@ services:
       - COIN_MARKET_CAP_API_KEY
       - PAYMENT_SPLITTER_ADDRESS
       - DEFAULT_NETWORK
+      - MAX_GAS_PRICE

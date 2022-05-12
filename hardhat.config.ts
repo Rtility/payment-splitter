@@ -42,11 +42,15 @@ const config: HardhatUserConfig = {
       url: process.env.RINKEBY_URL || '',
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    mainnet : {
+      url: process.env.MAINNET_URL || '',
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: 'USD',
-    gasPrice: 100,
+    gasPrice: 50,
     showTimeSpent: true,
     coinmarketcap: process.env.COIN_MARKET_CAP_API_KEY || '',
   },
