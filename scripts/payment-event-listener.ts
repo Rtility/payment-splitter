@@ -17,7 +17,10 @@ async function main() {
 
     if (contractBalance.gt(0)) {
       console.log('Withdrawing...');
-      const tx1 = await PaymentSplitter.withdraw();
+      const tx1 = await PaymentSplitter.withdraw({
+        maxFeePerGas: ethers.utils.parseUnits('60', 'gwei'),
+        maxPriorityFeePerGas: ethers.utils.parseUnits('1.5', 'gwei'),
+      });
       await tx1.wait();
       console.log('Withdraw ' + ethers.utils.formatEther(contractBalance) + ' ETH at tx:', tx1.hash);
     } else {
