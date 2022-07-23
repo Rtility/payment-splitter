@@ -34,19 +34,19 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    ropsten: {
-      url: process.env.ROPSTEN_URL || '',
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
     rinkeby: {
-      url: process.env.RINKEBY_URL || '',
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      url: process.env.RINKEBY_RPC_URL || '',
+      accounts: process.env.TEST_PRIVATE_KEY !== undefined ? [process.env.TEST_PRIVATE_KEY] : [],
+    },
+    mainnet: {
+      url: process.env.MAINNET_RPC_URL || '',
+      accounts: process.env.MAINNET_PRIVATE_KEY !== undefined ? [process.env.MAINNET_PRIVATE_KEY] : [],
     },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: 'USD',
-    gasPrice: 100,
+    gasPrice: 60,
     showTimeSpent: true,
     coinmarketcap: process.env.COIN_MARKET_CAP_API_KEY || '',
   },

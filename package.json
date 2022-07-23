@@ -5,11 +5,12 @@
   "scripts": {
     "compile": "hardhat compile",
     "clean-compile": "hardhat clean && hardhat compile --force",
-    "test": "hardhat test",
-    "test:gas": "REPORT_GAS=true npx hardhat test",
+    "test": "hardhat test --network hardhat",
+    "test:gas": "REPORT_GAS=true npx hardhat test --network hardhat",
     "deploy": "hardhat run scripts/deploy.ts",
     "node": "hardhat node",
-    "payment-event-listener": "hardhat run scripts/payment-event-listener.ts"
+    "payment-event-listener": "hardhat run scripts/payment-event-listener.ts",
+    "payment-withdraw": "hardhat run scripts/withdrawal.ts"
   },
   "keywords": [],
   "author": "",
